@@ -1,6 +1,8 @@
 ---
 title: "Accessing Twitter Historical Tweets"
-output: html_notebook
+output: 
+   html_document:
+     theme: "united"
 ---
 
 In this tutorial, we will go through the steps to create a Twitter Developer account to access their full API of tweets since March 2006.  

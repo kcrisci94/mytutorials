@@ -1,0 +1,81 @@
+---
+title: "Getting Recent Tweets"
+output: 
+   html_document:
+     theme: "united"
+---
+
+In this tutorial we will explore how to get current Tweets (last 30 days), and some of the things you can do with these data. In order to access tweets prior to the past 30 days, see my [historical tweets](./twitterHistoricalTweets.html) tutorial. 
+
+# Install rtweet and httpuv
+
+First, we need to install the rtweet package if it is not already installed. We also need to install the httpuv package. Rtweet will allow us to get the tweets, while httpuv controls the web sockets that are used during data transfer. We can also load the tidyverse and dplyr libraries. 
+
+```{r message=FALSE, warning=FALSE}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rtweet")
+include("httpuv")
+include("tidyverse")
+include("dplyr")
+include("pander")
+```
+
+
+# Get tweets
+
+First, we use the search_tweets function (this function only returns tweets from the past 6 to 9 days). Using this function, we can get tweets that match a specified keyword, and the number of tweets to return. 
+We can also use this function to search for a specific phrase or multiple keywords at once (shown below)
+
+
+In this code, we are searching for tweets over the last 6 to 9 days including the phrase "corona virus", only returning tweets in English (lang="en"), not including retweets or reposts (include_rts = FALSE), and only returning 500 tweets (n = 500). 
+
+```{r message=FALSE}
+campFire <- search_tweets('"corona virus"', lang="en", include_rts = FALSE, n = 500)
+```
+
+
+#  Plot a time series
+
+We can then plot the freqency of these tweets using the **ts_plot** function. We can specify the units used for time as well (secs, hours, mins, days, weeks, months, years, etc)
+
+```{r}
+ts_plot(campFire, by = "mins") + ggtitle("Frequency of 'Camp Fire' Tweets Over Time") + labs(x = " Time in Minutes", y = "Number of Tweets")
+```
+
+# Access user data 
+
+After retrieving a set of tweets, we can use the **users_data** function to return information on each of the users who sent a tweet in our dataset. Below we can see the data that can be obtained using this method. 
+
+```{r}
+users <- users_data(campFire)
+colnames(users)
+```
+
+We can use the "location" to plot where these tweets were sent from. For this example, I filtered the results to show only tweets that were sent from the United States.
+
+```{r message=FALSE}
+campFire <- search_tweets('"corona virus"', lang="en", include_rts = FALSE, geocode = lookup_coords("usa"), n = 500)
+```
+
+It is important to note that only the points for people who have geographical location enabled are plotted (there are a lot of N/A values that are ignored). 
+```{r message=FALSE}
+include("maps")
+## create lat/lng variables
+campFire <- lat_lng(campFire)
+
+## plot state boundaries
+par(mar = c(0, 0, 0, 0))
+maps::map("state", lwd = .25)
+
+## plot lat and lng points onto map
+with(campFire, points(lng, lat, pch = 20, cex = .75, col = rgb(0, .3, .7, .75)))
+```
+  
+references:  
+1. https://rtweet.info/  
+2. https://rtweet-workshop.mikewk.com/#22  
+3. https://mran.microsoft.com/snapshot/2017-02-20/web/packages/rtweet/vignettes/intro.html  
