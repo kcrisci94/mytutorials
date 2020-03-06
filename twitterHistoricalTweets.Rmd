@@ -1,0 +1,124 @@
+---
+title: "Accessing Twitter Historical Tweets"
+output: html_notebook
+---
+
+In this tutorial, we will go through the steps to create a Twitter Developer account to access their full API of tweets since March 2006.  
+
+## Step One:
+
+Make a Twitter account
+* https://twitter.com/login?lang=en
+
+## Step Two:
+You must apply for a Twitter dev account. Actual human beings over at Twitter HQ review access requests for developer API keys. Long story short, they need to make sure you're not a bot.
+
+**Acceptance might take hours-days. Check email frequently.**
+
+* https://developer.twitter.com/en/apply-for-access
+    * You will be prompted to specify who you are and what you will be using your Twitter dev account for.
+    * There will be a section where you will have to explain 
+
+
+## Step Three:
+
+Once you have accessed your development account, you must create a new App on Twitter. 
+Open the dropdown menu next to your profile name, and click on **Apps**. Then click on the button that says **Create an app**. The app requires several entries:  
+
+ * **App name:** Choose a name for your app. Ideally, this should be all letters and numbers with no spaces.
+ * **Application Description:** Add a description for your application (between 10 and 200 characters). This will be visible to others.
+ * **Website URL:** If you do not have a website to host data attribution, enter a "placeholder" url, or the URL to your twitter profile.
+ * **Callback URLs:** This is **IMPORTANT**. Type this "http://127.0.0.1:1410" into the field. This is the universal loopback address, which ensures that callbacks go back to the localhost on port 1410.
+ * **Tell us how this app will be used:** Write a description about how this app will work (minimum of 100 characters)  
+
+It is also important to make sure you **Enable Sign in with Twitter**.  
+
+Once finished, click the **Create** button. 
+
+*You have now successfully created your app*  
+
+## Step Four:
+Open the drop down menu by your profile name again, but this time, click **dev environments**.
+Because we want to access the full archive of Tweets, we will be using the Full Archive/Sandbox environment. Click the button to set up that environment (this should be the one in the middle).
+
+In the pop-up menu, type in a label for the environment (this should be different from the name of your app) and select your app that you created in step 3 before clicking **Complete Setup**.  
+
+*You have now successfully set up your environment*  
+
+## Step Five: 
+Now we need to enable browser authentication. To do this, we will be using the packages **rtweet** and **httpub**. 
+
+```
+## Install packages if not installed
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rtweet")
+include("httpuv")
+```
+
+Next, we need to retreive the authentication codes from the application we created in step 3. Go to your Twitter Developer account, navigate to your **Apps** page, and click on the **Details** button next to your app. Then, click on the **Keys and tokens** tab. This shows you your **API key** and your **API secret key**. Copy and paste these values into your R script file.
+```
+## load rtweet
+library(rtweet)
+
+## store api keys (these are fake example values; replace with your own keys)
+api_key <- "afYS4vbIlPAj096E60c4W1fiK"
+api_secret_key <- "bI91kqnqFoNCrZFbsjAWHD4gJ91LQAhdCJXCj3yscfuULtNkuu"
+```   
+
+## Step Six:
+Now we need to generate access tokens. To do this, we use the same page we got the api keys from. Go down to where it says **Access token and access token secret** and click **Generate**. A window will pop up with these keys. Copy these keys into the same R script file, so now we have this...   
+```
+##(these are fake example values; replace with your own keys)
+
+api_key <- "afYS4vbIlPAj096E60c4W1fiK"
+api_secret_key <- "bI91kqnqFoNCrZFbsjAWHD4gJ91LQAhdCJXCj3yscfuULtNkuu"
+access_token <- "YS4vbIlPAj096YS4vbIlPAj096"
+access_token_secret <- "YS4YS4vbIlPYS4vbIlPAj096Aj096vbIlPAj096"
+
+```   
+**IMPORTANT**: Do not store these keys anywhere in your code that you upload to Github or anywhere else online. Use them to generate your token, and then store them in a separate file that is ignored by the .gitignore file, or save them as environment variables in the **~/.Renviron** folder (can be edited using **file.edit("~/.Renviron"))**
+
+## Step Seven:
+
+Now we need to create a token so that we can access the api. We do this with the **create_token()** function. 
+
+```
+## authenticate via web browser
+token <- create_token(
+  app = "APPNAME", ## the name of your app
+  consumer_key = api_key,
+  consumer_secret = api_secret_key),
+  access_token = access_token,
+  access_secret = access_token_secret
+  )
+```
+
+This function automatically saves the token in your environment. You can then use the function **get_token()** to access your token in future R sessions (on the same machine). Just make sure to view your token to make sure the api keys match. 
+
+```
+## check to see if the token is loaded
+library(rtweet)
+get_token()
+```
+
+Once the token is in your environment, you can start searching for tweets using the **rtweet** package.  
+
+## Search Tweets
+We can use the **search_tweets()** to search for tweets that contain a certain keyword. For example...   
+```
+rt <- search_tweets(
+   "#data", n = 18000, include_rts = FALSE
+)
+
+```
+In this block of code, "#data" is saying to collect all tweets that contain the word "data". **n** represents the number of tweets to return. Twitter only allows 18,000 tweets to be pulled at one time. After that, you must wait 15 minutes before you can receive more. By setting the **retryonratelimit** attribute to true, this function will automatically wait for the specified time period before receiving more tweets.
+
+```
+rt <- search_tweets(
+   "#data", n = 75000, include_rts = FALSE, retryonratelimit = TRUE
+)
+```
