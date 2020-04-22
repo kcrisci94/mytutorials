@@ -1,0 +1,109 @@
+---
+title: "Twitter Search Full Archive Curl"
+author: "Kaleb Crisci"
+date: "4/22/2020"
+output: html_document
+---
+
+# Introduction  
+
+In this tutorial, I will show how to search the full archive using the `curl` request. All `curl` commands need to be run at the command line. The _Terminal_ window inside R studio will work for this.
+
+## Step 1: Create a Bearer Token   
+Navigate to your twitter developer account and access the app that you created. Navigate to the "Keys and Tokens" page and locate the "Consumer API Keys." These keys will be used to generate your bearer token. Enter these keys into the following curl request.   
+
+```
+curl -u '<API key>:<API secret key>' \
+   --data 'grant_type=client_credentials' \
+   'https://api.twitter.com/oauth2/token'
+```
+
+Here's an example of what it should look like (these aren't real keys)   
+
+```
+curl -u 'j6ug2DsN2nDImNevwSyPhjz6rd:xrdUZzMpmwTPIdnNnDIcxogUgRmZevwfSyPD6KrkhSjaXX32zT4z8' \
+  --data 'grant_type=client_credentials' \
+  'https://api.twitter.com/oauth2/token'
+```
+
+>note: The backslashes represent new lines (only for formatting in this document. When you really use these commands, you can do it all on 1 line, but you need to remove all the backslashes)
+
+You will get a response that holds the bearer token that we will be using. For example:   
+
+```
+{"token_type":"bearer","access_token":"AAAAAAAAAAAAAAAAAAAAAMLheAAAAAAA0%2BuSeid%2BULvsea4JtiGRiSDSJSI%3DEUifiRBkKG5E2XzMDjRfl76ZC9Ub0wnz4XsNiRVBChTYbJcE3F"}
+
+```
+
+Copy the code that is returned:
+
+```
+AAAAAAAAAAAAAAAAAAAAAMLheAAAAAAA0%2BuSeid%2BULvsea4JtiGRiSDSJSI%3DEUifiRBkKG5E2XzMDjRfl76ZC9Ub0wnz4XsNiRVBChTYbJcE3F   
+```
+
+## Step 2: Write the request
+
+Now that we have our bearer token, we need to use it in the main curl request which looks like this:   
+```
+curl --request POST \
+  --url https://api.twitter.com/1.1/tweets/search/fullarchive/<ENV>.json \
+  --header 'authorization: Bearer <BEARER_TOKEN>' \
+  --header 'content-type: application/json' \
+  --data '{
+                "query":"from:TwitterDev lang:en",
+                "maxResults": "100",
+                "fromDate":"<YYYYMMDDHHmm>", 
+                "toDate":"<YYYYMMDDHHmm>"
+                }'
+```
+
+So, once we insert our `<BEARER_TOKEN>`, and developer environment `<ENV>` it would look something like this:   
+
+```
+curl --request POST --url https://api.twitter.com/1.1/tweets/search/fullarchive/datasci485App.json --header 'authorization: Bearer AAAAAAAAAAAAAAAAAAAAADVsCQEAAAAA4bvDPyYPZ%2BBRMBQ0ZBaGQn0n9KQ%3DBZzFA3DJDYgKHbPJIqnkl5LqkNLEppCfdf19xclFjhHmMZKQuV' --header 'content-type: application/json' --data '{"query":"from:TwitterDev lang:en", "maxResults":"500", "fromDate":"202002010000", "toDate":"202002040000"}'
+```
+
+## Step 3: Write the results to a file
+
+Specify the file name (path optional) at the end of this request as `> filename.json`. No quotes around the path name. 
+
+
+```
+curl --request POST --url https://api.twitter.com/1.1/tweets/search/fullarchive/datasci485App.json --header 'authorization: Bearer AAAAAAAAAAAAAAAAAAAAADVsCQEAAAAA4bvDPyYPZ%2BBRMBQ0ZBaGQn0n9KQ%3DBZzFA3DJDYgKHbPJIqnkl5LqkNLEppCfdf19xclFjhHmMZKQuV' --header 'content-type: application/json' --data '{"query":"from:TwitterDev lang:en", "maxResults":"500", "fromDate":"202002010000", "toDate":"202002040000"}' > tweet_block_1.json
+```
+
+
+## Pagination
+
+Often the number of tweets returned for a given query will be more than your `maxResults`. So not all data will be returned during one curl request. In this case, a parameter called `next` will be provided **at the bottom of the JSON response file** You can pick up where you left off by submitting the exact same request again, but adding the `<NEXT>` token to the query. 
+
+
+```
+curl --request POST \
+  --url https://api.twitter.com/1.1/tweets/search/fullarchive/<ENV>.json \
+  --header 'authorization: Bearer <BEARER_TOKEN>' \
+  --header 'content-type: application/json' \
+  --data '{
+                "query":"from:TwitterDev lang:en",
+                "maxResults": "100",
+                "fromDate":"<YYYYMMDDHHmm>", 
+                "toDate":"<YYYYMMDDHHmm>",
+                "next": "<NEXT>"
+                }'
+```
+
+Caution: The query length for sandbox accounts is limited to 256 characters. 
+
+
+More info from the Twitter [dev page on pagination](https://developer.twitter.com/en/docs/tweets/search/api-reference/premium-search#Pagination). 
+
+
+----
+
+This page was written by Kaleb Crisci, and edited by Dr. Donatello. on `r Sys.time()`. 
+
+Next steps: 
+
+* See if R can write curl requests. 
+* If so, then find a way to automatically pass the `next` parameter to the next call. 
+
