@@ -1,0 +1,36 @@
+---
+title: "pandas_notes"
+author: "Kaleb Crisci"
+date: "5/17/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library("reticulate")
+use_python("/usr/bin/python3")
+```
+
+```{python, include=FALSE}
+import pandas as pd
+from IPython.display import display
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 1000)
+pd.set_option('display.colheader_justify', 'center')
+pd.set_option('display.precision', 3)
+```
+
+# Basics   
+
+### Importing Pandas and Viewing a Dataset  
+
+```{python}
+import pandas as pd
+
+mydataset = {
+  'cars': ["BMW", "Volvo", "Ford"],
+  'passings': [3, 7, 2]
+}
+myvar = pd.DataFrame(mydataset)
+display(myvar)
+```
