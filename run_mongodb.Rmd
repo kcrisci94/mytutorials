@@ -1,0 +1,65 @@
+---
+title: "RunMongoDB"
+author: "Kaleb Crisci"
+date: "10/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Start MongoDB from Ubuntu
+
+```
+sudo systemctl start mongod
+```
+
+## Verify that MongoDB has started successfully
+
+```
+sudo systemctl status mongod
+```
+
+## Start MongoDB on startup
+
+```
+sudo systemctl enable mongod
+```
+
+## Stop MongoDB
+
+```
+sudo systemctl stop mongod
+```
+
+## Restart MongoDB
+
+```
+sudo systemctl restart mongod
+```
+
+## Begin Using MongoDB
+
+```
+mongosh
+```
+
+# Remove MongoDB
+
+## Stop MongoDB
+```
+sudo service mongod stop
+```
+
+## Remove Packages
+```
+sudo apt-get purge mongod-org*
+```
+
+## Remove Data Directories
+```
+sudo rm -r /var/log/mongodb
+sudo rm -r /var/lib/mongodb
+```
+
